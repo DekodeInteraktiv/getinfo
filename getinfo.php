@@ -90,7 +90,7 @@ function debug_redirect_to_mapped_domain() {
 
 	$protocol = is_ssl() ? 'https://' : 'http://';
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
-	$url = debug_domain_mapping_siteurl( false );
+	$url = domain_mapping_siteurl( false );
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
