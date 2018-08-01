@@ -123,13 +123,13 @@ add_action(
 		// debug_redirect_to_mapped_domain();
 		// remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
 		$info = is_ssl() ? 'https' : 'http';
-		header( 'X-Info: ' . $info );
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
 	}, 9
 );
 
 add_action(
 	'template_redirect', function() {
 		$info = is_ssl() ? 'https' : 'http';
-		header( 'X-Info: ' . $info );
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
 	}, 11
 );
