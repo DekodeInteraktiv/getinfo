@@ -161,16 +161,26 @@ add_action(
 		*/
 		// debug_domain_mapping_siteurl( false ); // This returns the correct URL with https://
 		// header( 'X-Info: ' . $info );
-		debug_redirect_to_mapped_domain();
-		remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
-		$info = is_ssl() ? 'https' : 'http';
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
+		// debug_redirect_to_mapped_domain();
+		// remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
+		// $info = is_ssl() ? 'https' : 'http';
+		// header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
 	}, 9
 );
 
 add_action(
 	'template_redirect', function() {
-		$info = is_ssl() ? 'https' : 'http';
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
+		// $info = is_ssl() ? 'https' : 'http';
+		// header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
 	}, 11
+);
+
+add_action(
+	'init', function() {
+		if ( isset( $_GET['bjorndebug'] ) ) {
+			header( 'Content-Type: text/plain', true );
+			readfile( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
+			exit;
+		}
+	}
 );
