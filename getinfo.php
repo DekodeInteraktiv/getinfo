@@ -120,7 +120,7 @@ add_action(
 		*/
 		// debug_domain_mapping_siteurl( false ); // This returns the correct URL with https://
 		// header( 'X-Info: ' . $info );
-		debug_redirect_to_mapped_domain();
-		remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
+		// debug_redirect_to_mapped_domain();
+		// remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
 	}, 9
 );
