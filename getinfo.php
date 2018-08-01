@@ -23,8 +23,11 @@ add_action(
 
 		// $info = is_ssl() ? 'https' : 'http'; // Works.
 		// $info = domain_mapping_siteurl( false ); // Returns with http://
-		$info = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
+		$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" ); // returns plain domain name.
+		$protocol = is_ssl() ? 'https://' : 'http://';
+		$info = untrailingslashit( $protocol . $domain );
 
 		header( 'X-Info: ' . $info );
+		header( 'X-Info-B: ' . $wpdb->blogid );
 	}, 9
 );
