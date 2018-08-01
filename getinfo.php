@@ -64,8 +64,8 @@ function debug_domain_mapping_siteurl( $setting ) {
 		$setting = $return_url[ $wpdb->blogid ];
 	}
 
-	// return $setting;
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $setting ) );
+	return $setting;
 }
 
 function debug_redirect_to_mapped_domain() {
@@ -89,7 +89,8 @@ function debug_redirect_to_mapped_domain() {
 	}
 
 	$protocol = is_ssl() ? 'https://' : 'http://';
-	$url = domain_mapping_siteurl( false );
+	header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
+	$url = debug_domain_mapping_siteurl( false );
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
@@ -97,9 +98,6 @@ function debug_redirect_to_mapped_domain() {
 			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
 			$_SERVER['REQUEST_URI'] = str_replace( $current_blog->path, '/', $_SERVER['REQUEST_URI'] );
 		}
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $current_blog->domain ) );
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $current_blog->path ) );
 		header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
 		header( "Location: {$url}{$_SERVER[ 'REQUEST_URI' ]}", true, $redirect );
 		exit;
