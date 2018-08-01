@@ -68,6 +68,47 @@ function debug_domain_mapping_siteurl( $setting ) {
 	return $setting;
 }
 
+function my_domain_mapping_siteurl( $setting ) {
+	global $wpdb, $current_blog;
+
+	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
+	static $return_url = array();
+
+	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+
+	if ( ! isset( $return_url[ $wpdb->blogid ] ) ) {
+		$s = $wpdb->suppress_errors();
+
+		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER['HTTP_HOST'] ) . "' LIMIT 1" );
+			if ( null == $domain ) {
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
+				return $return_url[ $wpdb->blogid ];
+			}
+		} else {
+			// get primary domain, if we don't have one then return original url.
+			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
+			if ( null == $domain ) {
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
+				return $return_url[ $wpdb->blogid ];
+			}
+		}
+
+		$wpdb->suppress_errors( $s );
+		$protocol = is_ssl() ? 'https://' : 'http://';
+		if ( $domain ) {
+			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain );
+			$setting = $return_url[ $wpdb->blogid ];
+		} else {
+			$return_url[ $wpdb->blogid ] = false;
+		}
+	} elseif ( $return_url[ $wpdb->blogid ] !== false ) {
+		$setting = $return_url[ $wpdb->blogid ];
+	}
+
+	return $setting;
+}
+
 function debug_redirect_to_mapped_domain() {
 	global $current_blog, $wpdb;
 
@@ -90,7 +131,7 @@ function debug_redirect_to_mapped_domain() {
 
 	$protocol = is_ssl() ? 'https://' : 'http://';
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
-	$url = domain_mapping_siteurl( false );
+	$url = my_domain_mapping_siteurl( false );
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
