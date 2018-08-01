@@ -7,7 +7,7 @@
 
 /**
  * Plugin Name: GetInfo
- * Description: Get info
+ * Description: Get info, do tests etc.
  * Version: 0.0.1
  * Author: Dekode
  * License: GPLv2 or later
@@ -16,172 +16,97 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * List of domains we want to redirect to HTTPS.
+ *
+ * @var string[]
+ */
+$https_domains = [
+	'22julisenteret.no',
+	'ansvarlignaringsliv.no',
+	'apenhetsutvalget.no',
+	'arbeidstidsutvalget.no',
+	'banklovkommisjonen.no',
+	'beredskapssenter.regjeringen.no',
+	'blankholmutvalget.no',
+	'byerogdistrikter.no',
+	'delingsokonomi.dep.no',
+	'design.dep.no',
+	'domstolkommisjonen.no',
+	'eiti.no',
+	'eosmidlene.regjeringen.no',
+	'etikkradet.no',
+	'familieportalen.mfa.no',
+	'folkehelsemelding.regjeringen.no',
+	'gronnkonkurransekraft.no',
+	'helsekonferansen.no',
+	'jobbifin.dep.no',
+	'jobbifinans.dep.no',
+	'klagenemndsekretariatet.no',
+	'klagenemndssekretariatet.no',
+	'kommunedata.regjeringen.no',
+	'liedutvalget.no',
+	'likestiltnorden2017.regjeringen.no',
+	'marintmiljo.no',
+	'nettsteder.regjeringen.no',
+	'nygenerelldel.regjeringen.no',
+	'open.regjeringa.no',
+	'open.regjeringen.no',
+	'opplaringslovutvalget.no',
+	'produktivitetskommisjon.no',
+	'produktivitetskommisjon.stat.no',
+	'produktivitetskommisjonen.no',
+	'produktivitetskommisjonen.stat.no',
+	'responsiblebusiness.no',
+	'samanom.no',
+	'sammenom.no',
+	'samvitsutvalet.no',
+	'samvittighetsutvalget.no',
+	'seedvault.no',
+	'skm.stat.no',
+	'sosentkokebok.regjeringen.no',
+	'varslerutvalget.no',
+	'varslingsutvalget.no',
+	'www.22julisenteret.no',
+	'www.ansvarlignaringsliv.no',
+	'www.apenhetsutvalget.no',
+	'www.arbeidstidsutvalget.no',
+	'www.banklovkommisjonen.no',
+	'www.beredskapssenter.regjeringen.no',
+	'www.blankholmutvalget.no',
+	'www.byerogdistrikter.no',
+	'www.domstolkommisjonen.no',
+	'www.eiti.no',
+	'www.etikkradet.no',
+	'www.gronnkonkurransekraft.no',
+	'www.helsekonferansen.no',
+	'www.jobbifinans.dep.no',
+	'www.klagenemndsekretariatet.no',
+	'www.klagenemndssekretariatet.no',
+	'www.liedutvalget.no',
+	'www.marintmiljo.no',
+	'www.opplaringslovutvalget.no',
+	'www.responsiblebusiness.no',
+	'www.samanom.no',
+	'www.sammenom.no',
+	'www.samvitsutvalet.no',
+	'www.samvittighetsutvalget.no',
+	'www.seedvault.no',
+	'www.varslerutvalget.no',
+	'www.varslingsutvalget.no',
+	'www.xn--ansvarlignringsliv-xub.no',
+	'xn--ansvarlignringsliv-xub.no',
+];
 
-function debug_domain_mapping_siteurl( $setting ) {
-	global $wpdb, $current_blog;
+header( 'X-Info: ' . $_SERVER['REQUEST_METHOD'] );
 
-	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
-	static $return_url = array();
-
-	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-
-	if ( ! isset( $return_url[ $wpdb->blogid ] ) ) {
-		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-		$s = $wpdb->suppress_errors();
-
-		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
-			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER['HTTP_HOST'] ) . "' LIMIT 1" );
-			if ( null == $domain ) {
-				header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
-				return $return_url[ $wpdb->blogid ];
-			}
-		} else {
-			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-			// get primary domain, if we don't have one then return original url.
-			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
-			if ( null == $domain ) {
-				header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
-				return $return_url[ $wpdb->blogid ];
-			}
-		}
-
-		$wpdb->suppress_errors( $s );
-		$protocol = is_ssl() ? 'https://' : 'http://';
-		if ( $domain ) {
-			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain );
-			$setting = $return_url[ $wpdb->blogid ];
-			header( sprintf( 'X-Info-%d: %s', __LINE__, $setting ) );
-		} else {
-			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-			$return_url[ $wpdb->blogid ] = false;
-		}
-	} elseif ( $return_url[ $wpdb->blogid ] !== false ) {
-		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-		$setting = $return_url[ $wpdb->blogid ];
-	}
-
-	header( sprintf( 'X-Info-%d: %s', __LINE__, $setting ) );
-	return $setting;
+/*
+ * If we’re not on HTTPS,
+ * the requested hostname is in the list above
+ * and the request method is GET or HEAD (we don't want to redirect e.g. POST as we’ll lose the data)
+ * we do a redirect to the same URL but on HTTPS.
+ */
+if ( ! is_ssl() && in_array( $_SERVER['HTTP_HOST'], $https_domains, true ) && in_array( strtolower( $_SERVER['REQUEST_METHOD'] ), [ 'get', 'head' ], true ) ) {
+	header( 'Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], true, 301 );
+	exit;
 }
-
-function my_domain_mapping_siteurl( $setting ) {
-	global $wpdb, $current_blog;
-
-	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
-	static $return_url = array();
-
-	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-
-	if ( ! isset( $return_url[ $wpdb->blogid ] ) ) {
-		$s = $wpdb->suppress_errors();
-
-		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
-			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER['HTTP_HOST'] ) . "' LIMIT 1" );
-			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
-				return $return_url[ $wpdb->blogid ];
-			}
-		} else {
-			// get primary domain, if we don't have one then return original url.
-			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
-			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
-				return $return_url[ $wpdb->blogid ];
-			}
-		}
-
-		$wpdb->suppress_errors( $s );
-		$protocol = is_ssl() ? 'https://' : 'http://';
-		if ( $domain ) {
-			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain );
-			$setting = $return_url[ $wpdb->blogid ];
-		} else {
-			$return_url[ $wpdb->blogid ] = false;
-		}
-	} elseif ( $return_url[ $wpdb->blogid ] !== false ) {
-		$setting = $return_url[ $wpdb->blogid ];
-	}
-
-	return $setting;
-}
-
-function debug_redirect_to_mapped_domain() {
-	global $current_blog, $wpdb;
-
-	// don't redirect the main site
-	if ( is_main_site() ) {
-		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-		return;
-	}
-	// don't redirect post previews
-	if ( isset( $_GET['preview'] ) && $_GET['preview'] == 'true' ) {
-		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-		return;
-	}
-
-	// don't redirect theme customizer (WP 3.4)
-	if ( isset( $_POST['customize'] ) && isset( $_POST['theme'] ) && $_POST['customize'] == 'on' ) {
-		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-		return;
-	}
-
-	$protocol = is_ssl() ? 'https://' : 'http://';
-	header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
-	$url = my_domain_mapping_siteurl( false );
-	header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
-	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
-		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
-		if ( ( defined( 'VHOST' ) && constant( 'VHOST' ) != 'yes' ) || ( defined( 'SUBDOMAIN_INSTALL' ) && constant( 'SUBDOMAIN_INSTALL' ) == false ) ) {
-			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-			$_SERVER['REQUEST_URI'] = str_replace( $current_blog->path, '/', $_SERVER['REQUEST_URI'] );
-		}
-		header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
-		header( "Location: {$url}{$_SERVER[ 'REQUEST_URI' ]}", true, $redirect );
-		exit;
-	}
-
-	header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
-}
-
-
-add_action(
-	'template_redirect', function() {
-
-		// $info = is_ssl() ? 'https' : 'http'; // Works.
-		// $info = domain_mapping_siteurl( false ); // Returns with http://
-		/*
-		global $wpdb, $current_blog;
-		$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" ); // returns plain domain name.
-		$protocol = is_ssl() ? 'https://' : 'http://';
-		$info = untrailingslashit( $protocol . $domain ); // returns https://22julisenteret.no
-		*/
-		// debug_domain_mapping_siteurl( false ); // This returns the correct URL with https://
-		// header( 'X-Info: ' . $info );
-		// debug_redirect_to_mapped_domain();
-		// remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
-		// $info = is_ssl() ? 'https' : 'http';
-		// header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
-	}, 9
-);
-
-add_action(
-	'template_redirect', function() {
-		// $info = is_ssl() ? 'https' : 'http';
-		// header( sprintf( 'X-Info-%d: %s', __LINE__, $info ) );
-	}, 11
-);
-
-add_action(
-	'init', function() {
-		if ( isset( $_GET['bjorndebug'] ) ) {
-			header( 'Content-Type: text/plain', true );
-			// readfile( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
-			echo( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
-			exit;
-		}
-	}
-);
