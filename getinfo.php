@@ -179,7 +179,8 @@ add_action(
 	'init', function() {
 		if ( isset( $_GET['bjorndebug'] ) ) {
 			header( 'Content-Type: text/plain', true );
-			readfile( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
+			// readfile( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
+			echo( trailingslashit( WP_PLUGIN_DIR ) . 'wordpress-mu-domain-mapping/domain_mapping.php' );
 			exit;
 		}
 	}
