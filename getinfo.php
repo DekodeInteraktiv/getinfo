@@ -122,5 +122,14 @@ add_action(
 		// header( 'X-Info: ' . $info );
 		// debug_redirect_to_mapped_domain();
 		// remove_action( 'template_redirect', 'redirect_to_mapped_domain' );
+		$info = is_ssl() ? 'https' : 'http';
+		header( 'X-Info: ' . $info );
 	}, 9
+);
+
+add_action(
+	'template_redirect', function() {
+		$info = is_ssl() ? 'https' : 'http';
+		header( 'X-Info: ' . $info );
+	}, 11
 );
