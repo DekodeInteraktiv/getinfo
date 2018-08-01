@@ -28,6 +28,7 @@ add_action(
 		$info = untrailingslashit( $protocol . $domain );
 
 		header( 'X-Info: ' . $info );
+		header( 'X-Info-A: ' . $protocol );
 		header( 'X-Info-B: ' . $wpdb->blogid );
 	}, 9
 );
