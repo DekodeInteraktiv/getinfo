@@ -18,7 +18,8 @@ defined( 'ABSPATH' ) || exit;
 
 add_action(
 	'template_redirect', function() {
-		$info = is_ssl() ? 'https' : 'http';
+		// $info = is_ssl() ? 'https' : 'http'; // Works.
+		$info = domain_mapping_siteurl( false );
 		header( 'X-Info: ' . $info );
 	}, 9
 );
