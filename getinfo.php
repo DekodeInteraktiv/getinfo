@@ -98,8 +98,6 @@ $https_domains = [
 	'xn--ansvarlignringsliv-xub.no',
 ];
 
-header( 'X-Info: ' . $_SERVER['REQUEST_METHOD'] );
-
 /*
  * If we’re not on HTTPS,
  * the requested hostname is in the list above
