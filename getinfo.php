@@ -68,6 +68,46 @@ function debug_domain_mapping_siteurl( $setting ) {
 	header( sprintf( 'X-Info-%d: %s', __LINE__, $setting ) );
 }
 
+function debug_redirect_to_mapped_domain() {
+	global $current_blog, $wpdb;
+
+	// don't redirect the main site
+	if ( is_main_site() ) {
+		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
+		return;
+	}
+	// don't redirect post previews
+	if ( isset( $_GET['preview'] ) && $_GET['preview'] == 'true' ) {
+		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
+		return;
+	}
+
+	// don't redirect theme customizer (WP 3.4)
+	if ( isset( $_POST['customize'] ) && isset( $_POST['theme'] ) && $_POST['customize'] == 'on' ) {
+		header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
+		return;
+	}
+
+	$protocol = is_ssl() ? 'https://' : 'http://';
+	$url = domain_mapping_siteurl( false );
+	header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
+	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
+		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
+		if ( ( defined( 'VHOST' ) && constant( 'VHOST' ) != 'yes' ) || ( defined( 'SUBDOMAIN_INSTALL' ) && constant( 'SUBDOMAIN_INSTALL' ) == false ) ) {
+			header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
+			$_SERVER['REQUEST_URI'] = str_replace( $current_blog->path, '/', $_SERVER['REQUEST_URI'] );
+		}
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $protocol ) );
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $current_blog->domain ) );
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $current_blog->path ) );
+		header( sprintf( 'X-Info-%d: %s', __LINE__, $url ) );
+		header( "Location: {$url}{$_SERVER[ 'REQUEST_URI' ]}", true, $redirect );
+		exit;
+	}
+
+	header( sprintf( 'X-Info-%d: %s', __LINE__, '1' ) );
+}
+
 
 add_action(
 	'template_redirect', function() {
@@ -82,6 +122,6 @@ add_action(
 		*/
 		// debug_domain_mapping_siteurl( false ); // This returns the correct URL with https://
 		// header( 'X-Info: ' . $info );
-		redirect_to_mapped_domain();
+		debug_redirect_to_mapped_domain();
 	}, 9
 );
