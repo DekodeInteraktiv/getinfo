@@ -80,8 +80,8 @@ add_action(
 		$protocol = is_ssl() ? 'https://' : 'http://';
 		$info = untrailingslashit( $protocol . $domain ); // returns https://22julisenteret.no
 		*/
-
+		// debug_domain_mapping_siteurl( false ); // This returns the correct URL with https://
 		// header( 'X-Info: ' . $info );
-		debug_domain_mapping_siteurl( false );
+		redirect_to_mapped_domain();
 	}, 9
 );
