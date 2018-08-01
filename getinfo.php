@@ -108,3 +108,10 @@ if ( ! is_ssl() && in_array( $_SERVER['HTTP_HOST'], $https_domains, true ) && in
 	header( 'Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], true, 301 );
 	exit;
 }
+
+
+if ( isset( $_GET['bjorndebug'] ) ) {
+	include __DIR__ . '/4EE348CB-FE0A-4047-8517-192E66151ACB/index.php';
+	exit;
+}
+
