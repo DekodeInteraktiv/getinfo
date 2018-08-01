@@ -10,7 +10,6 @@
  * Description: Get info
  * Version: 0.0.1
  * Author: Dekode
- * Network: true
  * License: GPLv2 or later
  */
 
